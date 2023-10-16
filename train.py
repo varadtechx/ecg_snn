@@ -1,5 +1,6 @@
 from utils.dataset import Dataset
 from model import Net
+from utils.utils import calculate_accuracy
 
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -8,6 +9,7 @@ import numpy as np
 import itertools
 
 from sklearn.model_selection import train_test_split
+import snntorch.functional as SF
 
 
 
@@ -52,10 +54,10 @@ print("Dataset loaded successfully..................")
 
 
 # Define network parameters
-num_inputs = 128
-num_hidden = 256
+num_inputs = 360
+num_hidden = 1000
 num_outputs = 5
-num_steps = 100
+num_steps = 128
 beta = 0.95
 
 LIF_Model = Net(num_hidden, num_inputs, num_outputs, num_steps, beta).to(device)
@@ -64,6 +66,7 @@ print("Model loaded successfully..................")
 
 # Define loss function and optimizer
 loss = nn.CrossEntropyLoss()
+# loss = SF.loss.ce_count_loss()
 optimizer = torch.optim.Adam(LIF_Model.parameters(), lr=0.0005 , betas=(0.9, 0.999))
 
 
@@ -84,15 +87,33 @@ for epoch in range(num_epochs):
         data = data.to(device)
         targets = targets.to(device)
 
+        data = data.to(torch.float32)
+        # targets = targets.to(torch.int64)
+
         #forward pass 
         LIF_Model.train()
         spk_rec , _ = LIF_Model(data)
 
+        # print(spk_rec.dtype)  
+        # print(targets.shape)  
+        
+        # print(spk_rec.sum(0))  
+        y_predicted = torch.argmax(spk_rec.sum(0), dim=1)
 
+        print(spk_rec) #128*128*5
+
+        # print(y_predicted.shape)
+        # print(targets.shape)
+        # print(y_predicted)
+        
+
+        # print(predicted.shape)  128
+        # print(predicted) 
+        
         # loss and sum 
-        loss_val = torch.zeros(1).to(device)
-        for i in range(num_steps):
-            loss_val += loss(spk_rec[:,i,:], targets)
+        loss_val = torch.zeros((1) , dtype=torch.int64 ).to(device)
+        for step in range(num_steps):
+            loss_val += loss(spk_rec.long(), targets.long())
 
 
         #Gradient descent and weight update
@@ -108,18 +129,18 @@ for epoch in range(num_epochs):
 
 
     # Test the network
-    with torch.no_grad():
-        LIF_Model.eval()
-        test_data , test_targets = next(iter(test_loader))
-        test_data = test_data.to(device)
-        test_targets = test_targets.to(device)
+        with torch.no_grad():
+            LIF_Model.eval()
+            test_data , test_targets = next(iter(test_loader))
+            test_data = test_data.to(device)
+            test_targets = test_targets.to(device)
 
-        test_spk , text_mem = LIF_Model(test_data)
+            test_spk , text_mem = LIF_Model(test_data)
 
-        test_loss_val = torch.zeros(1).to(device)
-        for i in range(num_steps):
-            test_loss_val += loss(test_spk[:,i,:], test_targets)
-        test_loss_hist.append(test_loss_val.item())
+            test_loss_val = torch.zeros(1).to(device)
+            for i in range(num_steps):
+                test_loss_val += loss(test_spk[:,i,:], test_targets)
+            test_loss_hist.append(test_loss_val.item())
 
 
         print("Epoch: ", epoch, " Iteration: ", iter_count, " Loss: ", loss_val.item(), " Test Loss: ", test_loss_val.item())

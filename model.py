@@ -5,15 +5,11 @@ import torch.nn as nn
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Define network parameters
-# num_inputs = 128
-# num_hidden = 256
-# num_outputs = 5
-# num_steps = 100
-# beta = 0.1
+
 
 class Net(nn.Module ):
     def __init__(self, num_hidden, num_inputs, num_outputs, num_steps, beta):
+        super(Net, self).__init__() 
         self.num_hidden = num_hidden
         self.num_inputs = num_inputs
         self.num_outputs = num_outputs
@@ -22,9 +18,9 @@ class Net(nn.Module ):
 
 
         # Initialize layers
-        self.fc1 = nn.Linear(num_inputs, num_hidden)
+        self.fc1 = nn.Linear(num_inputs, num_hidden).to(torch.float32)
         self.lif1 = snn.Leaky(beta=beta)
-        self.fc2 = nn.Linear(num_hidden, num_outputs)
+        self.fc2 = nn.Linear(num_hidden, num_outputs).to(torch.float32)
         self.lif2 = snn.Leaky(beta=beta)
 
         
