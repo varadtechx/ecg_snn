@@ -107,7 +107,7 @@ class Dataset:
             #     plt.plot(signals[0:700])
             #     plt.show()
                 
-            signals = stats.zscore(signals)
+            # signals = stats.zscore(signals)
             # # Plot an example to the signals
             # if r == 6:
             #     # Plot each patient's signal

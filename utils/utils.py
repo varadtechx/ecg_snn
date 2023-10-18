@@ -48,9 +48,10 @@ def delta_encoding(data , threshold = 0.1, off_spike = False , padding = False):
 
     """
     delta = np.zeros((100012,360))
+    
 
     # num_rows ,num_cols = data.shape 100012,360
-  
+
 
     
 
