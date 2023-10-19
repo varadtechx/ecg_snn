@@ -47,7 +47,7 @@ def delta_encoding(data , threshold = 0.1, off_spike = False , padding = False):
     off_spike : for considering negative values 
 
     """
-    delta = np.zeros((100012,360))
+    delta = np.zeros((5,360))
     
 
     # num_rows ,num_cols = data.shape 100012,360
@@ -56,10 +56,10 @@ def delta_encoding(data , threshold = 0.1, off_spike = False , padding = False):
     
 
     if not padding :
-        for rows in range(0,100012) : 
+        for rows in range(0,5) : 
             delta[rows][0] = 1
 
-    for rows in range(100012):
+    for rows in range(5):
         for coloums in range(0,359):
             if  data[rows][coloums+1] - data[rows][coloums]  >= threshold:
                 delta[rows][coloums+1] = 1
